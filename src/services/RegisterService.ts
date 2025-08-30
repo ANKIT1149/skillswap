@@ -24,7 +24,7 @@ export const RegisterService = async ({ username, email, password }: FormData) =
             throw new Error('Login Failed')
         }
 
-        const verification = await account.createVerification({ url: 'http://localhost:3000/verify' })
+        const verification = await account.createVerification({ url:process.env.PRODUCTION_URL!})
         console.log('Verification email sent:', verification)
 
         return response
