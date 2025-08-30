@@ -1,9 +1,14 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { FormData } from '@/props/Formdata';
 import Provider from '../Providers';
+import { RegisterService } from '@/services/RegisterService';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
+import { Loader2Icon } from 'lucide-react';
+import Canvas from '../Canvas';
 
 export default function Signup() {
   const [formData, setFormData] = useState<FormData>({
@@ -11,16 +16,33 @@ export default function Signup() {
     email: '',
     password: '',
   });
-
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log('Form submitted:', formData);
+    setLoading(true);
+
+    try {
+      const signup = await RegisterService(formData);
+
+      if (signup.$id) {
+        toast.success('Registration Success');
+        setTimeout(() => {
+          router.push('/mailnotification');
+        }, 2000);
+      }
+    } catch (error) {
+      console.log('Registration Failed', error);
+      toast.error('Registration failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const containerVariants = {
@@ -28,7 +50,7 @@ export default function Signup() {
     visible: {
       opacity: 1,
       y: 0,
-      transition: { duration: 0.6, ease: 'easeOut' },
+      transition: { duration: 0.6, ease: 'easeOut' as const },
     },
   };
 
@@ -36,74 +58,10 @@ export default function Signup() {
     focus: { scale: 1.03, boxShadow: '0 0 10px rgba(129, 140, 248, 0.6)' },
   };
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    const particles: {
-      x: number;
-      y: number;
-      size: number;
-      speedX: number;
-      speedY: number;
-    }[] = [];
-    const particleCount = 30;
-
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 2 + 1,
-        speedX: Math.random() * 0.3 - 0.15,
-        speedY: Math.random() * 0.3 - 0.15,
-      });
-    }
-
-    let animationFrameId: number;
-
-    function animate() {
-      ctx?.clearRect(0, 0, canvas!.width, canvas!.height);
-      particles.forEach((particle) => {
-        particle.x += particle.speedX;
-        particle.y += particle.speedY;
-
-        if (particle.x < 0 || particle.x > canvas!.width) particle.speedX *= -1;
-        if (particle.y < 0 || particle.y > canvas!.height)
-          particle.speedY *= -1;
-
-        ctx!.fillStyle = 'rgba(129, 140, 248, 0.4)';
-        ctx!.beginPath();
-        ctx!.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
-        ctx!.fill();
-      });
-      animationFrameId = requestAnimationFrame(animate);
-    }
-
-    animate();
-
-    const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 overflow-hidden relative">
-      <canvas ref={canvasRef} className="absolute inset-0" />
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 opacity-20 animate-gradient-shift" />
+       <Canvas />
+      <div className="absolute inet-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 opacity-20 animate-gradient-shift" />
 
       <motion.div
         variants={containerVariants}
@@ -179,6 +137,7 @@ export default function Signup() {
             />
           </div>
           <motion.button
+            disabled={loading}
             whileHover={{
               scale: 1.05,
               boxShadow: '0 0 15px rgba(129, 140, 248, 0.7)',
@@ -187,7 +146,7 @@ export default function Signup() {
             type="submit"
             className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
           >
-            Register Now
+            {loading ? <Loader2Icon /> : 'Register Now'}
           </motion.button>
         </form>
         <p className="text-center text-sm text-gray-300 mt-5">
