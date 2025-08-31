@@ -144,9 +144,9 @@ export default function Signup() {
             }}
             whileTap={{ scale: 0.95 }}
             type="submit"
-            className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
+            className="w-full cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
           >
-            {loading ? <Loader2Icon /> : 'Register Now'}
+            {loading ? <Loader2Icon className='mx-auto animate-spin'/> : 'Register Now'}
           </motion.button>
         </form>
         <p className="text-center text-sm text-gray-300 mt-5">

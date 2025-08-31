@@ -25,7 +25,7 @@ const VerifyEmail = () => {
         if (verifyemail.$id) {
           toast.success('Email Verified successfully');
           setVerified(true);
-          setTimeout(() => router.push('/dashboard'), 10000);
+          setTimeout(() => router.push('/biopage'), 10000);
         }
       } catch (error) {
         console.log('Verification failed', error);
