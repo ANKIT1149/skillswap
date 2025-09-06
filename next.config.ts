@@ -1,6 +1,12 @@
-import { NextConfig } from 'next';
+import { NextConfig } from "next";
+import bundleAnalyzer from "@next/bundle-analyzer";
 
-/** @type {import('next').NextConfig} */
+/** Enable analyzer only when ANALYZE=true */
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
+
 const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
@@ -11,15 +17,15 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**',
+        protocol: "https",
+        hostname: "**",
       },
       {
-        protocol: 'https',
-        hostname: '*.ucf.edu',
+        protocol: "https",
+        hostname: "*.ucf.edu",
       },
     ],
   },
 };
 
-export default nextConfig;
+export default withBundleAnalyzer(nextConfig);

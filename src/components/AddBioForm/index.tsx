@@ -1,42 +1,126 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @next/next/no-img-element */
 'use client';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import WaveAnimation from '../WaveAnimation';
 import LineAnimation from '../LineAnimation';
-
-// Define form data type
-interface ProfileFormData {
-  name: string;
-  bio: string;
-  skillsToTeach: [];
-  skillsToLearn: [];
-  profilePicture: File | null;
-}
+import { ProfileFormData } from '@/props/ProfileFormData';
+import axios from 'axios';
+import { GetUserService } from '@/services/GetUserService';
+import { UploadImageService } from '@/services/UploadImageService';
+import toast from 'react-hot-toast';
+import { GetProfileImageUrl } from '@/services/GetProfileImageService';
+import { BioSchema } from '@/schema/BioSchema';
+import { BioService } from '@/services/BioServices';
+import { useRouter } from 'next/navigation';
+import { Loader2 } from 'lucide-react';
 
 export default function AddProfile() {
   const [formData, setFormData] = useState<ProfileFormData>({
     name: '',
     bio: '',
-    skillsToTeach: [],
-    skillsToLearn: [],
-    profilePicture: null,
+    skillsToTeach: [''],
+    skillsToLearn: [''],
+    profilePictureurl: '',
+    learnEmbedding: '',
+    teachEmbedding: ''
   });
+  const [fileId, setFileId] = useState<string>('');
+  const [fileUrl, setFileUrl] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const router = useRouter();
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    console.log(formData)
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] || null;
-    setFormData({ ...formData, profilePicture: file });
+    if (!file) {
+      toast.error('Please provide a photo for your profile');
+    }
+
+    const profilePhotoId = await UploadImageService(file!);
+    setFileId(profilePhotoId);
+
+    const filelink: any = await GetProfileImageUrl(profilePhotoId);
+    console.log(filelink);
+    setFileUrl(filelink);
+    setFormData({ ...formData, profilePictureurl: filelink });
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('Profile submitted:', formData);
+    setLoading(true);
+    const userId = await GetUserService();
+
+    if (
+      !formData.skillsToLearn ||
+      !formData.skillsToTeach
+    ) {
+      toast.error('Please provide both skills to learn and teach');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const embeddingsResponse = await axios.post('/api/embedding', {
+        userId,
+        skillsToLearn: formData.skillsToLearn,
+        skillsToTeach: formData.skillsToTeach,
+      });
+
+      const embeddings = embeddingsResponse.data.embedding;
+
+      console.log('embedding', embeddings, embeddingsResponse);
+      console.log('embeddingId', embeddings[0].id);
+      const updatedformdata = {
+        ...formData,
+        teachEmbedding: embeddings[1].id,
+        learnEmbedding: embeddings[0].id
+      };
+
+      const validation = BioSchema.safeParse(updatedformdata);
+
+      if (!validation.success) {
+        toast.error(validation.error.message);
+      }
+
+      const response = await BioService({ userId, ...updatedformdata });
+      console.log('response', response);
+
+      if (response.status === 400) {
+        return toast.error(
+          'Username already exsist.Please enter unique username'
+        );
+      }
+
+      if ('$id' in response) {
+        toast.success('Bio Added Successfully');
+        setFormData({
+          ...formData,
+          name: '',
+          bio: '',
+          skillsToLearn: [''],
+          skillsToTeach: [''],
+          profilePictureurl: '',
+        });
+        return router.push(`/dashboard/${userId}`);
+      } else {
+        toast.error('Bio Added Failed');
+      }
+    } catch (error) {
+      console.log('Error in Submit Form', error);
+      throw new Error('Error in Submit Form');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const containerVariants = {
@@ -94,13 +178,11 @@ export default function AddProfile() {
                 onChange={handleFileChange}
                 className="absolute inset-0 opacity-0 cursor-pointer "
               />
-              {formData.profilePicture ? (
-                <Image
-                  src={URL.createObjectURL(formData.profilePicture)}
+              {formData.profilePictureurl ? (
+                <img
+                  src={formData.profilePictureurl}
                   alt="Profile Preview"
-                  layout="fill"
-                  objectFit="cover"
-                  className="rounded-full group-hover:opacity-80 transition-opacity duration-300"
+                  className="rounded-full object-cover w-24 h-24 group-hover:opacity-80 transition-opacity duration-300"
                 />
               ) : (
                 <Image
@@ -164,7 +246,6 @@ export default function AddProfile() {
             />
           </motion.div>
 
-
           <motion.div variants={childVariants}>
             <label
               htmlFor="skillsToTeach"
@@ -182,8 +263,10 @@ export default function AddProfile() {
               type="text"
               name="skillsToTeach"
               id="skillsToTeach"
-              value={formData.skillsToTeach}
-              onChange={handleChange}
+              value={formData.skillsToTeach || ''}
+              onChange={(e) => {
+                setFormData({...formData, skillsToTeach: [e.target.value]})
+              }}
               className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-coral-400 focus:border-transparent transition-all duration-300 cursor-pointer"
               placeholder="e.g., React, Python"
               required
@@ -208,7 +291,9 @@ export default function AddProfile() {
               name="skillsToLearn"
               id="skillsToLearn"
               value={formData.skillsToLearn}
-              onChange={handleChange}
+              onChange={(e) => {
+                setFormData({...formData, skillsToLearn: [e.target.value]})
+              }}
               className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-coral-400 focus:border-transparent transition-all duration-300 cursor-pointer"
               placeholder="e.g., JavaScript, Data Science"
               required
@@ -225,7 +310,7 @@ export default function AddProfile() {
             type="submit"
             className="w-full bg-gradient-to-r from-black to-red-600 text-white py-3 px-4 rounded-lg hover:from-coral-600 hover:to-red-700 transition-all duration-300 cursor-pointer"
           >
-            Add Bio
+            {loading ? <Loader2 className="mx-auto animate-spin" /> : 'Add Bio'}
           </motion.button>
         </form>
       </motion.div>
