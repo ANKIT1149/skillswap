@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import MatchedTeachersCard from '../matchedTeacherCard/page';
 
 const MatchedTeachers = () => {
   // Animation variants for header
@@ -44,7 +45,7 @@ const MatchedTeachers = () => {
       >
         Connect with Your Ideal Teachers!
       </motion.h1>
-          <MatchedTeachers />
+          <MatchedTeachersCard />
     </div>
   );
 };

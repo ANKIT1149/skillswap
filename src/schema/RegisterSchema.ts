@@ -6,7 +6,7 @@ export const RegisterSchema = z.object({
     .min(4, 'Username must be at least 4 characters long')
     .max(40, 'Username must be at most 40 characters long'),
 
-  email: z.email().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email address'),
+  email: z.string().email().regex(/^[^\s@]+@[^\s@]+\.[^\s@]+$/, 'Invalid email address'),
 
   password: z
     .string()
