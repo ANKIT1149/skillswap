@@ -9,7 +9,7 @@ import {
 
 
 const navItems: NavItem[] = [
-  { name: 'Home', icon: Home, href: '/dashboard' },
+  { name: 'Home', icon: Home, href: '/' },
   { name: 'Profile', icon: User, href: '/dashboard/profile' },
   { name: 'Rating & Reviews', icon: Users, href: '/dashboard/rating' },
   {

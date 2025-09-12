@@ -124,7 +124,6 @@ const CreatingMatches = () => {
           });
 
           if (response.status === 200) {
-            toast.success('Fetch success');
             const data = response.data.result;
             const savedTeachDoc = await StoreSkillWantToTeach({
               currentUserId: userId,

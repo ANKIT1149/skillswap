@@ -1,9 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { navLinks } from '@/constants/HomeNav';
 import { useRouter } from 'next/navigation';
+import { DeleteUserService } from '@/services/DeleteUserServices';
+import toast from 'react-hot-toast';
+import { GetUserService } from '@/services/GetUserService';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -16,6 +20,19 @@ export default function Navbar() {
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const [user, setUser] = useState<string | null>(null);
+  useEffect(() => {
+    const checkUserExsist = async () => {
+      const userId = await GetUserService();
+      setUser(userId);
+      if (!userId) {
+        router.push('/login');
+      }
+    };
+
+    checkUserExsist();
   }, []);
 
   const linkVariants = {
@@ -80,30 +97,59 @@ export default function Navbar() {
               {link.name}
             </motion.a>
           ))}
-          <div className="space-x-4">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              onClick={(e) => {
-                e.preventDefault();
-                router.push('/login');
-              }}
-              whileTap={{ scale: 0.95 }}
-              className="px-5 py-2 rounded-full text-sm font-medium text-white border border-blue-500 hover:bg-blue-500/20 transition-all duration-200"
-            >
-              Login
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              onClick={(e) => {
-                e.preventDefault();
-                router.push('/signup');
-              }}
-              whileTap={{ scale: 0.95 }}
-              className="px-5 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
-            >
-              Signup
-            </motion.button>
-          </div>
+          {!user ? (
+            <div className="space-x-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/login');
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="px-5 py-2 rounded-full text-sm font-medium text-white border border-blue-500 hover:bg-blue-500/20 transition-all duration-200"
+              >
+                Login
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/signup');
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="px-5 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+              >
+                Signup
+              </motion.button>
+            </div>
+          ) : (
+            <div className="space-x-4">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={async (e) => {
+                  e.preventDefault();
+                  router.push('/login');
+                  await DeleteUserService();
+                  toast.success('Logout Succcessfully');
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="px-5 py-2 rounded-full text-sm font-medium text-white border border-blue-500 hover:bg-blue-500/20 transition-all duration-200"
+              >
+                Logout
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  router.push('/dashboard/teachermatched');
+                }}
+                whileTap={{ scale: 0.95 }}
+                className="px-5 py-2 rounded-full text-sm font-medium bg-gradient-to-r from-blue-500 to-purple-600 text-white hover:from-blue-600 hover:to-purple-700 transition-all duration-200"
+              >
+                Dashboard
+              </motion.button>
+            </div>
+          )}
         </div>
 
         {/* Mobile Hamburger */}

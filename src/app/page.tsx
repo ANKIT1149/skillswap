@@ -10,22 +10,9 @@ import Newsletter from '@/components/Newsletter';
 import Pricing from '@/components/Subscription';
 import Testimonials from '@/components/Testinomials';
 import WhyChoose from '@/components/WhyChooseUs';
-// import { GetUserService } from '@/services/GetUserService';
-// import { useRouter } from 'next/navigation';
-// import { useEffect } from 'react';
+
 
 export default function Home() {
-  // const router = useRouter();
-  // useEffect(() => {
-  //   const checkUserExsist = async () => {
-  //     const userId = await GetUserService()
-  //     if (userId) {
-  //       router.push("/dashboard/teachermatched")
-  //     }
-  //   }
-
-  //   checkUserExsist()
-  // }, [])
   return (
     <>
       <Navbar />

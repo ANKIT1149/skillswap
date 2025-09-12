@@ -8,11 +8,15 @@ import { navItems } from '@/constants/NavItem';
 import { GetUserService } from '@/services/GetUserService';
 import { database } from '@/db/Appwrite';
 import { GetUserRow } from '@/utils/GetUserRow';
+import { DeleteUserService } from '@/services/DeleteUserServices';
+import toast from 'react-hot-toast';
+import { useRouter } from 'next/navigation';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const toggleSidebar = () => setIsOpen(!isOpen);
   const [userId, setUserId] = useState('');
+
   useEffect(() => {
     const fetchUser = async () => {
       const user = await GetUserService();
@@ -21,6 +25,8 @@ export default function Sidebar() {
 
     fetchUser();
   }, []);
+
+  const router = useRouter()
 
   useEffect(() => {
     if (!userId) return;
@@ -59,8 +65,12 @@ export default function Sidebar() {
     visible: { opacity: 1, x: 0, transition: { duration: 0.3 } },
   };
 
-  const handleLogout = () => {
+  const handleLogout = async() => {
     console.log('Logging out...');
+    const logout = await DeleteUserService();
+    toast.success("Logout Succcessfully")
+    console.log('logout', logout)
+    router.push("/login")
   };
 
   return (
