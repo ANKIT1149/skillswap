@@ -38,6 +38,7 @@ const ChatTop = () => {
         const userId = await GetUserService();
         setCurrentUser(userId);
         const userDataArray = await GetAnotherUserProfile(id, userId);
+        console.log(userDataArray)
         const userData = Array.isArray(userDataArray)
           ? userDataArray[0]
           : userDataArray;

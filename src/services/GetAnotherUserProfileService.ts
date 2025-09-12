@@ -17,16 +17,19 @@ export const GetAnotherUserProfile = async (chatID: string, userId: string) => {
       throw new Error('No User Found');
     }
 
-    const getUserId = queryMessage.rows.find((doc) => doc.userIds !== userId);
-    if (!getUserId?.userIds) {
+    const otherUserId = queryMessage.rows[0].userIds.find((id: any) => id !== userId);
+
+    if (!otherUserId) {
       throw new Error('No matching user found in this chat');
     }
 
     const fetchUser = await database.listRows({
       databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
       tableId: process.env.NEXT_PUBLIC_USERS_COLLECTION_ID!,
-      queries: [Query.equal('userId', getUserId?.userIds)],
+      queries: [Query.equal('userId', otherUserId)],
     });
+
+    console.log(fetchUser)
 
     return fetchUser.rows;
   } catch (error) {

@@ -19,38 +19,47 @@ export const StoreSkillWantToTeach = async ({
       const matchedUserId = matches.metadata.userId;
       const matchedSkill = matches.metadata.skill;
 
-      const data = await database.listRows({
+      if (matchedUserId === currentUserId) continue;
+
+      const existingMatch = await database.listRows({
         databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
         tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
-        queries: [Query.equal('userIds', matchedUserId)],
+        queries: [
+          Query.and([
+            Query.contains('userIds', currentUserId),
+            Query.contains('userIds', matchedUserId),
+          ]),
+        ],
       });
 
-      if (data.total > 0) {
-        const dataId = data.rows[0].$id;
-        const updateData = await database.updateRow({
+      if (existingMatch.total > 0) {
+        const matchId = existingMatch.rows[0].$id;
+        const currentSkills = existingMatch.rows[0].skillSwapped || [];
+        const newSkills = Array.from(
+          new Set([...currentSkills, ...skillsToTeach, ...matchedSkill])
+        );
+
+        const updated = await database.updateRow({
           databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
           tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
-          rowId: dataId,
-          data: {
-            userIds: [currentUserId, matchedUserId],
-            skillSwapped: [...skillsToTeach, ...matchedSkill],
-          },
+          rowId: matchId,
+          data: { skillSwapped: newSkills },
         });
 
-        result.push(updateData)
+        result.push(updated);
       } else {
-        const doc = await database.createRow({
+        const newMatch = await database.createRow({
           databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
           tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
           rowId: ID.unique(),
           data: {
             userIds: [currentUserId, matchedUserId],
             skillSwapped: [...skillsToTeach, ...matchedSkill],
-            type: 'Teacher',
+            type: 'teacher',
           },
         });
 
-        result.push(doc);
+        result.push(newMatch);
       }
     }
 

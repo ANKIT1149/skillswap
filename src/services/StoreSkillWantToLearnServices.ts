@@ -8,56 +8,66 @@ export const StoreSkillWantToLearn = async ({
   skillsToLearn,
   pineconeMatches,
 }: StoreSkillDataFixed) => {
-  if (!currentUserId && !skillsToLearn && !pineconeMatches) {
+  if (!currentUserId || !skillsToLearn || !pineconeMatches) {
     throw new Error('Please provide details to store data');
   }
 
   try {
     const result: any[] = [];
 
-    for (const matches of pineconeMatches) {
-      if (matches.metadata) {
-        const matchedUserId = matches.metadata.userId;
-        const matchedSkill = matches.metadata.skill;
+    for (const match of pineconeMatches) {
+      if (!match.metadata) continue;
 
-        const data = await database.listRows({
+      const matchedUserId = match.metadata.userId;
+      const matchedSkill = match.metadata.skill;
+
+      if (matchedUserId === currentUserId) continue;
+
+      const existingMatch = await database.listRows({
+        databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
+        tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
+        queries: [
+          Query.and([
+            Query.contains('userIds', currentUserId),
+            Query.contains('userIds', matchedUserId),
+          ]),
+        ],
+      });
+
+      if (existingMatch.total > 0) {
+        const matchId = existingMatch.rows[0].$id;
+        const currentSkills = existingMatch.rows[0].skillSwapped || [];
+        const newSkills = Array.from(
+          new Set([...currentSkills, ...skillsToLearn, ...matchedSkill])
+        );
+
+        const updated = await database.updateRow({
           databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
           tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
-          queries: [Query.equal('userIds', matchedUserId)],
+          rowId: matchId,
+          data: { skillSwapped: newSkills },
         });
 
-        if (data.total > 0) {
-          const dataId = data.rows[0].$id;
-          const updateData = await database.updateRow({
-            databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
-            tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
-            rowId: dataId,
-            data: {
-              userIds: [currentUserId, matchedUserId],
-              skillSwapped: [...skillsToLearn, ...matchedSkill],
-            },
-          });
+        result.push(updated);
+      } else {
+        const newMatch = await database.createRow({
+          databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
+          tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
+          rowId: ID.unique(),
+          data: {
+            userIds: [currentUserId, matchedUserId],
+            skillSwapped: [...skillsToLearn, ...matchedSkill],
+            type: 'student',
+          },
+        });
 
-          result.push(updateData);
-        } else {
-          const doc = await database.createRow({
-            databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
-            tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
-            rowId: ID.unique(),
-            data: {
-              userIds: [currentUserId, matchedUserId],
-              skillSwapped: [...skillsToLearn, ...matchedSkill],
-              type: 'student',
-            },
-          });
-
-          result.push(doc);
-        }
+        result.push(newMatch);
       }
     }
+
     return result;
   } catch (error) {
-    console.log('error in storing skill want to learn', error);
-    throw new Error('Error in stroing skill want to learn');
+    console.log('Error storing skills want to learn', error);
+    throw new Error('Error storing skills want to learn');
   }
 };

@@ -81,8 +81,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       console.log('updatedata', chatUpdate);
       return chatUpdate;
     };
-
-    
       readChatUpdate();
       console.log('running chatupdate function')
   }, [messages]);
