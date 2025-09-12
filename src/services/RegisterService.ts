@@ -24,7 +24,7 @@ export const RegisterService = async ({ username, email, password }: FormData) =
             throw new Error('Login Failed')
         }
 
-        const verification = await account.createVerification({ url: 'https://skillswap-hazel.vercel.app/verify'})
+        const verification = await account.createVerification({ url: 'https://skillswap.appwrite.network/verify'})
         console.log('Verification email sent:', verification)
 
         return response

@@ -14,7 +14,7 @@ const CreatingMatches = () => {
   const [displayedText, setDisplayedText] = useState('');
   const [fullText, setFullText] = useState('Please Wait, Creating Matches...');
   const [isTypingForward, setIsTypingForward] = useState(true);
-    const router = useRouter();
+  const router = useRouter();
 
   useEffect(() => {
     let i = 0;
