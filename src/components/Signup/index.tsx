@@ -9,6 +9,7 @@ import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
 import { Loader2Icon } from 'lucide-react';
 import Canvas from '../Canvas';
+import BackgroundImagePattern from '../BackgroundImagePattern';
 
 export default function Signup() {
   const [formData, setFormData] = useState<FormData>({
@@ -60,14 +61,13 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-900 overflow-hidden relative">
-       <Canvas />
-      <div className="absolute inet-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 opacity-20 animate-gradient-shift" />
-
+      <Canvas />
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 opacity-20 animate-gradient-shift" />
       <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative bg-gray-800 bg-opacity-90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-gray-600"
+        className="relative bg-gray-900 bg-opacity-90 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md border border-gray-600"
       >
         <h1 className="text-4xl font-extrabold text-center text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-pink-500 mb-6">
           Join SkillSwap
@@ -146,7 +146,11 @@ export default function Signup() {
             type="submit"
             className="w-full cursor-pointer bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-3 px-4 rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300"
           >
-            {loading ? <Loader2Icon className='mx-auto animate-spin'/> : 'Register Now'}
+            {loading ? (
+              <Loader2Icon className="mx-auto animate-spin" />
+            ) : (
+              'Register Now'
+            )}
           </motion.button>
         </form>
         <p className="text-center text-sm text-gray-300 mt-5">

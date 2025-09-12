@@ -33,7 +33,7 @@ export default function SignIn() {
       if (login.$id) {
         toast.success('Login Successfully');
         setTimeout(() => {
-          router.push('/dashboard');
+          router.push('/dashboard/teachermatched');
         }, 2000);
       } else {
           if (!login.emailVerification) {

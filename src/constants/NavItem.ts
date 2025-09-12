@@ -7,16 +7,17 @@ import {
   History,
 } from 'lucide-react';
 
+
 const navItems: NavItem[] = [
   { name: 'Home', icon: Home, href: '/dashboard' },
   { name: 'Profile', icon: User, href: '/dashboard/profile' },
-  { name: 'Connect Learner', icon: Users, href: '/dashboard/connect-learner' },
+  { name: 'Rating & Reviews', icon: Users, href: '/dashboard/rating' },
   {
     name: 'Connect Teacher',
     icon: BookOpen,
-    href: '/dashboard/connect-teacher',
+    href: '/dashboard/teachermatched',
   },
-  { name: 'History', icon: History, href: '/dashboard/history' },
+  { name: 'Check Block User', icon: History, href: '/dashboard/viewblock' },
 ];
 
 export {navItems}

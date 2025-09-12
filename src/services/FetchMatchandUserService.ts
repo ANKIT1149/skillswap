@@ -13,7 +13,10 @@ export const FetchMatchandUserService = async (currentUserId: string) => {
     const docs = await database.listRows({
       databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
       tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
-      queries: [Query.equal('userIds', currentUserId)],
+      queries: [
+        Query.equal('userIds', currentUserId),
+        Query.equal('type', 'Teacher'),
+      ],
     });
 
     docs.rows.forEach((doc) => {
@@ -29,24 +32,24 @@ export const FetchMatchandUserService = async (currentUserId: string) => {
       const userRes = await database.listRows({
         databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
         tableId: process.env.NEXT_PUBLIC_USERS_COLLECTION_ID!,
-        queries: [Query.equal('userId', otherUserIds)]}
-      );
+        queries: [Query.equal('userId', otherUserIds)],
+      });
       userDetails = userRes.rows;
-      }
-      
-      const result = docs.rows.map((item: any) => {
-          const otherUser = item.userIds.find((id: string) => id !== currentUserId)
-          const userData = userDetails.find((u: any) => u.userId === otherUser)
+    }
 
-          return {
-              matchId: item.$id,
-              otherUserId: otherUser,
-              userData,
-              skills: item.skillSwapped?.[otherUser || ""] || [],
-          }
-      })
+    const result = docs.rows.map((item: any) => {
+      const otherUser = item.userIds.find((id: string) => id !== currentUserId);
+      const userData = userDetails.find((u: any) => u.userId === otherUser);
 
-      return result
+      return {
+        matchId: item.$id,
+        otherUserId: otherUser,
+        userData,
+        skills: item.skillSwapped?.[otherUser || ''] || [],
+      };
+    });
+
+    return result;
   } catch (error) {
     console.log('Error in Fetching MatchData', error);
     throw new Error('Error in creating MatchData Service');

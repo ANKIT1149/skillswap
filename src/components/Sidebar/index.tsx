@@ -1,13 +1,47 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
-import {useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { LogOut, Settings } from 'lucide-react';
 import { navItems } from '@/constants/NavItem';
+import { GetUserService } from '@/services/GetUserService';
+import { database } from '@/db/Appwrite';
+import { GetUserRow } from '@/utils/GetUserRow';
 
 export default function Sidebar() {
   const [isOpen, setIsOpen] = useState<boolean>(true);
   const toggleSidebar = () => setIsOpen(!isOpen);
+  const [userId, setUserId] = useState('');
+  useEffect(() => {
+    const fetchUser = async () => {
+      const user = await GetUserService();
+      setUserId(user);
+    };
+
+    fetchUser();
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const rowId: any = await GetUserRow(userId)
+        await database.updateRow({
+          databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
+          tableId: process.env.NEXT_PUBLIC_USERS_COLLECTION_ID!,
+          rowId: rowId.$id,
+          data: {
+            lastSeen: new Date().toISOString(),
+          },
+        });
+      } catch (error) {
+        console.error('Error updating lastSeen', error);
+      }
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [userId]);
 
   const sidebarVariants = {
     open: {
@@ -26,18 +60,15 @@ export default function Sidebar() {
   };
 
   const handleLogout = () => {
-    // Implement Appwrite logout logic here
     console.log('Logging out...');
   };
-
-  
 
   return (
     <motion.aside
       variants={sidebarVariants}
       initial="open"
       animate={isOpen ? 'open' : 'closed'}
-      className="h-screen fixed bg-gradient-to-b from-coral-600 to-red-700 text-white flex flex-col shadow-2xl z-20"
+      className="h-screen  fixed bg-gradient-to-b from-coral-600 to-red-700 text-white flex flex-col shadow-2xl z-50"
     >
       <button
         onClick={toggleSidebar}
@@ -67,10 +98,9 @@ export default function Sidebar() {
         </motion.div>
       </button>
 
-      {/* Navigation Items */}
       <nav className="flex-1 px-4 mt-10">
         {navItems.map((item) => (
-          <Link key={item.name} href={item.href}>
+          <Link key={item.name} href={item.name === 'Profile' ? `/dashboard/${userId}`: item.href}>
             <motion.div
               variants={navItemVariants}
               whileHover={{

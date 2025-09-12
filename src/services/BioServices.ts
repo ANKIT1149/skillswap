@@ -13,6 +13,7 @@ export const BioService = async ({
   userId,
   learnEmbedding,
   teachEmbedding,
+  email
 }: ProfileFormData) => {
   console.log(
     'data',
@@ -23,7 +24,8 @@ export const BioService = async ({
     profilePictureurl,
     userId,
     learnEmbedding,
-    teachEmbedding
+    teachEmbedding,
+    email
   );
 
   if (
@@ -34,7 +36,8 @@ export const BioService = async ({
     !profilePictureurl ||
     !userId ||
     !learnEmbedding ||
-    !teachEmbedding
+    !teachEmbedding ||
+    !email
   ) {
     throw new Error('All fields are required');
   }
@@ -76,6 +79,7 @@ export const BioService = async ({
       profilePictureurl: profilePictureurl,
       learnEmbeddingId: learnEmbedding,
       teachEmbeddingId: teachEmbedding,
+      email: email
     };
 
     const store = await database.createRow({

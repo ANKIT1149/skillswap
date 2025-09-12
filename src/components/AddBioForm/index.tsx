@@ -8,7 +8,7 @@ import WaveAnimation from '../WaveAnimation';
 import LineAnimation from '../LineAnimation';
 import { ProfileFormData } from '@/props/ProfileFormData';
 import axios from 'axios';
-import { GetUserService } from '@/services/GetUserService';
+import { GetUser, GetUserService } from '@/services/GetUserService';
 import { UploadImageService } from '@/services/UploadImageService';
 import toast from 'react-hot-toast';
 import { GetProfileImageUrl } from '@/services/GetProfileImageService';
@@ -25,7 +25,7 @@ export default function AddProfile() {
     skillsToLearn: [''],
     profilePictureurl: '',
     learnEmbedding: '',
-    teachEmbedding: ''
+    teachEmbedding: '',
   });
   const [fileId, setFileId] = useState<string>('');
   const [fileUrl, setFileUrl] = useState<string>('');
@@ -37,7 +37,7 @@ export default function AddProfile() {
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    console.log(formData)
+    console.log(formData);
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,11 +59,10 @@ export default function AddProfile() {
     e.preventDefault();
     setLoading(true);
     const userId = await GetUserService();
+    const data = await GetUser();
+    const email = data.email;
 
-    if (
-      !formData.skillsToLearn ||
-      !formData.skillsToTeach
-    ) {
+    if (!formData.skillsToLearn || !formData.skillsToTeach) {
       toast.error('Please provide both skills to learn and teach');
       setLoading(false);
       return;
@@ -83,7 +82,7 @@ export default function AddProfile() {
       const updatedformdata = {
         ...formData,
         teachEmbedding: embeddings[1].id,
-        learnEmbedding: embeddings[0].id
+        learnEmbedding: embeddings[0].id,
       };
 
       const validation = BioSchema.safeParse(updatedformdata);
@@ -92,7 +91,7 @@ export default function AddProfile() {
         toast.error(validation.error.message);
       }
 
-      const response = await BioService({ userId, ...updatedformdata });
+      const response = await BioService({ email, userId, ...updatedformdata });
       console.log('response', response);
 
       if (response.status === 400) {
@@ -111,7 +110,7 @@ export default function AddProfile() {
           skillsToTeach: [''],
           profilePictureurl: '',
         });
-        return router.push(`/dashboard/${userId}`);
+        return router.push(`/matches`);
       } else {
         toast.error('Bio Added Failed');
       }
@@ -265,7 +264,7 @@ export default function AddProfile() {
               id="skillsToTeach"
               value={formData.skillsToTeach || ''}
               onChange={(e) => {
-                setFormData({...formData, skillsToTeach: [e.target.value]})
+                setFormData({ ...formData, skillsToTeach: [e.target.value] });
               }}
               className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-coral-400 focus:border-transparent transition-all duration-300 cursor-pointer"
               placeholder="e.g., React, Python"
@@ -292,7 +291,7 @@ export default function AddProfile() {
               id="skillsToLearn"
               value={formData.skillsToLearn}
               onChange={(e) => {
-                setFormData({...formData, skillsToLearn: [e.target.value]})
+                setFormData({ ...formData, skillsToLearn: [e.target.value] });
               }}
               className="mt-1 block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg text-gray-800 placeholder-gray-400 focus:ring-2 focus:ring-coral-400 focus:border-transparent transition-all duration-300 cursor-pointer"
               placeholder="e.g., JavaScript, Data Science"

@@ -2,7 +2,6 @@ import { motion } from 'framer-motion';
 import MatchedTeachersCard from '../matchedTeacherCard/page';
 
 const MatchedTeachers = () => {
-  // Animation variants for header
   const headerVariants = {
     hidden: { opacity: 0, y: -20 },
     visible: {

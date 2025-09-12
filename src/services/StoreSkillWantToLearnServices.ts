@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { database } from '@/db/Appwrite';
 import { StoreSkillDataFixed } from '@/props/StoreSkillData';
-import { ID } from 'appwrite';
+import { ID, Query } from 'appwrite';
 
 export const StoreSkillWantToLearn = async ({
   currentUserId,
@@ -20,18 +20,39 @@ export const StoreSkillWantToLearn = async ({
         const matchedUserId = matches.metadata.userId;
         const matchedSkill = matches.metadata.skill;
 
-        const doc = await database.createRow({
+        const data = await database.listRows({
           databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
           tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
-          rowId: ID.unique(),
-          data: {
-            userIds: [currentUserId, matchedUserId],
-            skillSwapped: [...skillsToLearn, ...matchedSkill],
-            type: 'student',
-          },
+          queries: [Query.equal('userIds', matchedUserId)],
         });
 
-        result.push(doc);
+        if (data.total > 0) {
+          const dataId = data.rows[0].$id;
+          const updateData = await database.updateRow({
+            databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
+            tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
+            rowId: dataId,
+            data: {
+              userIds: [currentUserId, matchedUserId],
+              skillSwapped: [...skillsToLearn, ...matchedSkill],
+            },
+          });
+
+          result.push(updateData);
+        } else {
+          const doc = await database.createRow({
+            databaseId: process.env.NEXT_PUBLIC_DATABSE_ID!,
+            tableId: process.env.NEXT_PUBLIC_MATCH_COLLECTION_ID!,
+            rowId: ID.unique(),
+            data: {
+              userIds: [currentUserId, matchedUserId],
+              skillSwapped: [...skillsToLearn, ...matchedSkill],
+              type: 'student',
+            },
+          });
+
+          result.push(doc);
+        }
       }
     }
     return result;

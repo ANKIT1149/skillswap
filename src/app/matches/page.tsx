@@ -134,7 +134,7 @@ const CreatingMatches = () => {
             setFullText('Match Created.Redirecting To Dashboard....');
             console.log(savedTeachDoc);
             toast.success("Match Creeated Successfully")
-            router.push(`dashboard/${userId}`)
+            router.push(`dashboard/teachermatched`)
           }
         }
       } catch (error) {
@@ -173,7 +173,7 @@ const CreatingMatches = () => {
         transition={{ duration: 1, ease: 'easeOut' }}
         className="relative z-10 text-center"
       >
-        {/* Spinning SVG Loader */}
+
         <motion.div
           variants={loaderVariants}
           animate="animate"
@@ -204,7 +204,6 @@ const CreatingMatches = () => {
           </svg>
         </motion.div>
 
-        {/* Animated Typing Text */}
         <motion.h1
           animate={textControls}
           className="text-5xl font-extrabold text-coral-600 mb-6"
