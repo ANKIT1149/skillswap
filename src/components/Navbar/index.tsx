@@ -27,9 +27,6 @@ export default function Navbar() {
     const checkUserExsist = async () => {
       const userId = await GetUserService();
       setUser(userId);
-      if (!userId) {
-        router.push('/login');
-      }
     };
 
     checkUserExsist();

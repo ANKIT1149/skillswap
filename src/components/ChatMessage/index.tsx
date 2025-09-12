@@ -85,12 +85,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     
       readChatUpdate();
       console.log('running chatupdate function')
-  }, []);
+  }, [messages]);
 
   return (
     <div
       ref={chatContainerRef}
-      className="flex-1 mt-20 mb-14 z-30 overflow-y-auto bg-teal-950 bg-opacity-80 backdrop-blur-md px-6 py-4 overflow-x-hidden w-[1285px]"
+      className="flex-1 mt-20 mb-14 min-h-screen z-30 overflow-y-auto bg-teal-950 bg-opacity-80 backdrop-blur-md px-6 py-4 overflow-x-hidden w-[1285px]"
     >
       {Object.keys(groupedMessage).map((dateLabel) => (
         <div key={dateLabel} className="mb-6">
