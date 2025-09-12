@@ -36,9 +36,8 @@ export const StoreSkillWantToLearn = async ({
 
       if (existingMatch.total > 0) {
         const matchId = existingMatch.rows[0].$id;
-        const currentSkills = existingMatch.rows[0].skillSwapped || [];
         const newSkills = Array.from(
-          new Set([...currentSkills, ...skillsToLearn, ...matchedSkill])
+          new Set([...skillsToLearn, ...matchedSkill])
         );
 
         const updated = await database.updateRow({
