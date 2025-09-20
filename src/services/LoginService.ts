@@ -24,3 +24,9 @@ export const LoginService = async ({ email, password }: LoginData) => {
         throw new Error("Login Failed")
     }
 }
+
+function hello(name) {
+  console.log("Hello " + name)
+}
+
+hello("Aryansh")
